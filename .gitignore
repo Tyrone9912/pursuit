@@ -1,0 +1,13 @@
+.DS_Store
+*.xcodeproj
+xcuserdata/
+DerivedData/
+.build/
+*.xcworkspace/xcuserdata/
+
+# job-hunt-agent personal data
+job-hunt-agent/server.token
+job-hunt-agent/data/
+job-hunt-agent/logs/
+job-hunt-agent/*.docx
+job-hunt-agent/preferences.json

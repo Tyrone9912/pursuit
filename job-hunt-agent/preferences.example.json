@@ -1,0 +1,49 @@
+{
+  "candidate_name": "Your Name",
+  "resume_path": "resume.docx",
+  "target_roles": [
+    "IT Manager",
+    "AI Enablement Lead"
+  ],
+  "seniority": [
+    "mid",
+    "senior"
+  ],
+  "location": {
+    "remote_ok": true,
+    "hybrid_cities": [
+      "Your City"
+    ],
+    "onsite_ok": false
+  },
+  "compensation": {
+    "salary_floor_usd": 100000,
+    "period": "year",
+    "notes": "plus benefits and equity/options preferred"
+  },
+  "employment_type": [
+    "full-time"
+  ],
+  "industry_focus": {
+    "prioritize": [
+      "Industry you want to prioritize"
+    ],
+    "exclude": []
+  },
+  "target_companies": [],
+  "sources": {
+    "allowed": [
+      "company career pages",
+      "Greenhouse (boards.greenhouse.io / boards-api.greenhouse.io)",
+      "Lever (jobs.lever.co / api.lever.co)",
+      "Ashby (jobs.ashbyhq.com)",
+      "general web search"
+    ],
+    "disallowed": [
+      "LinkedIn (no scraping or automated interaction)",
+      "Indeed (no scraping or automated interaction)"
+    ]
+  },
+  "max_new_matches_per_run": 8,
+  "notes": "Copy to preferences.json and edit. The next sweep picks up changes automatically."
+}

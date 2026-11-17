@@ -1,0 +1,6 @@
+server.token
+data/
+logs/
+resume.docx
+*.docx
+preferences.json

@@ -1,0 +1,537 @@
+<title>Job Hunt Queue</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #eef1ee;
+    --surface: #ffffff;
+    --surface-2: #e2e8e3;
+    --line: #d3dbd5;
+    --ink: #16211c;
+    --ink-soft: #56645c;
+    --ink-faint: #8a968e;
+    --accent: #1f6f5c;
+    --accent-ink: #ffffff;
+    --accent-soft: #d8ece6;
+    --amber: #9a6b12;
+    --amber-soft: #f3e6c8;
+    --blue: #2f6fb3;
+    --blue-soft: #dbe8f6;
+    --green: #1f7a4c;
+    --green-soft: #d9efe1;
+    --plum: #6a5591;
+    --plum-soft: #e6e0f0;
+    --red: #9a4a42;
+    --red-soft: #f2e0dd;
+    --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121714;
+      --surface: #1a211c;
+      --surface-2: #212a24;
+      --line: #2c3830;
+      --ink: #eef2ee;
+      --ink-soft: #a9b6ac;
+      --ink-faint: #71807a;
+      --accent: #5fbfa3;
+      --accent-ink: #0d1a15;
+      --accent-soft: #1f342c;
+      --amber: #d9a441;
+      --amber-soft: #332a12;
+      --blue: #7bb0e8;
+      --blue-soft: #1c2c3c;
+      --green: #5fbf88;
+      --green-soft: #1a3226;
+      --plum: #b09fd6;
+      --plum-soft: #2a2438;
+      --red: #d98f86;
+      --red-soft: #362320;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121714;
+    --surface: #1a211c;
+    --surface-2: #212a24;
+    --line: #2c3830;
+    --ink: #eef2ee;
+    --ink-soft: #a9b6ac;
+    --ink-faint: #71807a;
+    --accent: #5fbfa3;
+    --accent-ink: #0d1a15;
+    --accent-soft: #1f342c;
+    --amber: #d9a441;
+    --amber-soft: #332a12;
+    --blue: #7bb0e8;
+    --blue-soft: #1c2c3c;
+    --green: #5fbf88;
+    --green-soft: #1a3226;
+    --plum: #b09fd6;
+    --plum-soft: #2a2438;
+    --red: #d98f86;
+    --red-soft: #362320;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    padding-inline: 16px;
+    padding-block: 20px 48px;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  header.page {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 18px;
+  }
+  header.page h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.8rem;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  header.page p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .summary .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .summary .stat .n {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.3rem;
+    font-weight: 500;
+    display: block;
+  }
+  .summary .stat .lbl {
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .summary .stat.pending .n { color: var(--amber); }
+  .summary .stat.approved .n { color: var(--blue); }
+  .summary .stat.ready .n { color: var(--green); }
+  .summary .stat.applied .n { color: var(--plum); }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tabs button {
+    flex: none;
+    background: none;
+    border: none;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    padding: 8px 10px;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  .tabs button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .list { display: flex; flex-direction: column; gap: 12px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card .row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .card .role {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+  .card .company {
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex: none;
+  }
+  .pill.pending_review { background: var(--amber-soft); color: var(--amber); }
+  .pill.approved { background: var(--blue-soft); color: var(--blue); }
+  .pill.ready_to_submit { background: var(--green-soft); color: var(--green); }
+  .pill.applied { background: var(--plum-soft); color: var(--plum); }
+  .pill.rejected { background: var(--red-soft); color: var(--red); }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    background: var(--surface-2);
+    color: var(--ink-soft);
+    font-size: 0.76rem;
+    padding: 3px 8px;
+    border-radius: 7px;
+    font-family: var(--font-mono);
+  }
+
+  details.fit summary, details.draft summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--accent);
+    font-weight: 500;
+    list-style: none;
+  }
+  details.fit summary::-webkit-details-marker,
+  details.draft summary::-webkit-details-marker { display: none; }
+  details.fit summary::before { content: "Why it fits  "; }
+  details.draft summary::before { content: "Draft opening  "; }
+  details[open].fit summary::before,
+  details[open].draft summary::before { content: "Hide  "; }
+  details p {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--ink);
+    margin: 6px 0 0;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .actions button, .actions a.btn {
+    font-family: var(--font-body);
+    font-size: 0.84rem;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+  .actions button.primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+  .actions button:disabled { opacity: 0.5; cursor: default; }
+  .actions button:focus-visible, .actions a.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .source-link {
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+  }
+  .source-link a { color: var(--ink-soft); }
+
+  .empty {
+    background: var(--surface);
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    padding: 32px 20px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .empty strong { display: block; color: var(--ink); font-family: var(--font-display); font-size: 1.05rem; margin-bottom: 6px; font-weight: 600; }
+
+  footer.page {
+    margin-top: 28px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 0.76rem;
+    color: var(--ink-faint);
+    line-height: 1.6;
+  }
+  footer.page code {
+    font-family: var(--font-mono);
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  [hidden] { display: none !important; }
+</style>
+
+<header class="page">
+  <h1>Job Hunt Queue</h1>
+  <p>Helpdesk / IT Manager roles &middot; DC hybrid or remote &middot; $130k+</p>
+</header>
+
+<div class="summary">
+  <div class="stat pending"><span class="n" id="count-pending">0</span><span class="lbl">Pending</span></div>
+  <div class="stat approved"><span class="n" id="count-approved">0</span><span class="lbl">Approved</span></div>
+  <div class="stat ready"><span class="n" id="count-ready">0</span><span class="lbl">Ready</span></div>
+  <div class="stat applied"><span class="n" id="count-applied">0</span><span class="lbl">Applied</span></div>
+</div>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="pending_review" class="active">Pending review</button>
+  <button data-tab="approved">Approved</button>
+  <button data-tab="ready_to_submit">Ready to submit</button>
+  <button data-tab="history">History</button>
+</nav>
+
+<div class="list" id="list"></div>
+
+<footer class="page">
+  Sweeps run every 2 hours, 8am&ndash;8pm local, on your Mac. Search criteria live in
+  <code>preferences.json</code> in the job-hunt-agent folder &mdash; edit it any time, the next sweep
+  picks up changes automatically. Approving a match here queues it for the next sweep to fill in
+  (and stop before the final submit button).
+</footer>
+
+<script>
+(function () {
+  var STATUS_LABEL = {
+    pending_review: "New match",
+    approved: "Approved — queued",
+    ready_to_submit: "Ready to submit",
+    applied: "Applied",
+    rejected: "Rejected"
+  };
+
+  var state = { docs: [], activeTab: "pending_review", token: null };
+
+  var listEl = document.getElementById("list");
+  var tabsEl = document.getElementById("tabs");
+
+  function getToken() {
+    var fromUrl = new URLSearchParams(location.search).get("token");
+    if (fromUrl) {
+      try { localStorage.setItem("jobhunt_token", fromUrl); } catch (e) {}
+      history.replaceState(null, "", location.pathname);
+      return fromUrl;
+    }
+    try { return localStorage.getItem("jobhunt_token"); } catch (e) { return null; }
+  }
+
+  function api(pathname, opts) {
+    opts = opts || {};
+    var headers = Object.assign({ "X-Auth-Token": state.token || "" }, opts.headers || {});
+    if (opts.body) headers["Content-Type"] = "application/json";
+    return fetch(pathname, {
+      method: opts.method || "GET",
+      headers: headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(function (res) {
+      if (!res.ok) throw new Error("request failed: " + res.status);
+      return res.json();
+    });
+  }
+
+  tabsEl.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-tab]");
+    if (!btn) return;
+    state.activeTab = btn.dataset.tab;
+    Array.prototype.forEach.call(tabsEl.querySelectorAll("button"), function (b) {
+      b.classList.toggle("active", b === btn);
+    });
+    render();
+  });
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function fmtSalary(m) {
+    if (!m.salary) return null;
+    return typeof m.salary === "number" ? "$" + m.salary.toLocaleString() : String(m.salary);
+  }
+
+  function updateCounts() {
+    var counts = { pending_review: 0, approved: 0, ready_to_submit: 0, applied: 0 };
+    state.docs.forEach(function (m) {
+      if (counts.hasOwnProperty(m.status)) counts[m.status]++;
+    });
+    document.getElementById("count-pending").textContent = counts.pending_review;
+    document.getElementById("count-approved").textContent = counts.approved;
+    document.getElementById("count-ready").textContent = counts.ready_to_submit;
+    document.getElementById("count-applied").textContent = counts.applied;
+  }
+
+  function emptyCopy(tab) {
+    switch (tab) {
+      case "pending_review":
+        return ["No matches yet", "The first sweep runs today between 8am and 8pm. New matches will show up here for you to approve or reject."];
+      case "approved":
+        return ["Nothing queued", "Approve a match from Pending review and it moves here until the next sweep fills in the application."];
+      case "ready_to_submit":
+        return ["Nothing waiting on you", "Once a sweep fills in an approved application it stops right before the submit button — finish it in Chrome on your Mac."];
+      default:
+        return ["No history yet", "Applications and rejections will collect here once you start approving matches."];
+    }
+  }
+
+  function cardHtml(m) {
+    var salary = fmtSalary(m);
+    var chips = [];
+    if (m.location) chips.push(m.location);
+    if (salary) chips.push(salary);
+    if (m.source) chips.push(m.source);
+
+    var actions = "";
+    if (m.status === "pending_review") {
+      actions = '<div class="actions">' +
+        '<button class="primary" data-action="approve" data-id="' + esc(m.id) + '">Approve</button>' +
+        '<button data-action="reject" data-id="' + esc(m.id) + '">Reject</button>' +
+        "</div>";
+    } else if (m.status === "approved") {
+      actions = '<div class="actions">' +
+        '<button data-action="reject" data-id="' + esc(m.id) + '">Cancel</button>' +
+        "</div>";
+    } else if (m.status === "ready_to_submit") {
+      actions = '<div class="actions">' +
+        '<button class="primary" data-action="mark-applied" data-id="' + esc(m.id) + '">Mark applied</button>' +
+        "</div>";
+    }
+
+    var fit = m.fitNotes
+      ? '<details class="fit"><summary></summary><p>' + esc(m.fitNotes) + "</p></details>"
+      : "";
+    var draft = m.coverLetterOpening
+      ? '<details class="draft"><summary></summary><p>' + esc(m.coverLetterOpening) + "</p></details>"
+      : "";
+    var note = m.screenshotNote
+      ? '<p style="font-size:0.82rem;color:var(--ink-soft);margin:0;">' + esc(m.screenshotNote) + "</p>"
+      : "";
+    var link = m.sourceUrl
+      ? '<div class="source-link"><a href="' + esc(m.sourceUrl) + '" target="_blank" rel="noopener">View posting ↗</a></div>'
+      : "";
+
+    return (
+      '<article class="card">' +
+        '<div class="row-top">' +
+          '<div>' +
+            '<div class="role">' + esc(m.role || "Role") + "</div>" +
+            '<div class="company">' + esc(m.company || "Company") + "</div>" +
+          "</div>" +
+          '<span class="pill ' + esc(m.status) + '">' + esc(STATUS_LABEL[m.status] || m.status) + "</span>" +
+        "</div>" +
+        (chips.length ? '<div class="chips">' + chips.map(function (c) { return '<span class="chip">' + esc(c) + "</span>"; }).join("") + "</div>" : "") +
+        fit + draft + note + link + actions +
+      "</article>"
+    );
+  }
+
+  function render() {
+    updateCounts();
+    var docs = state.docs.slice();
+    var visible;
+    if (state.activeTab === "history") {
+      visible = docs.filter(function (m) { return m.status === "applied" || m.status === "rejected"; });
+    } else {
+      visible = docs.filter(function (m) { return m.status === state.activeTab; });
+    }
+    visible.sort(function (a, b) { return (b.updatedAt || "").localeCompare(a.updatedAt || ""); });
+
+    if (!visible.length) {
+      var copy = emptyCopy(state.activeTab);
+      listEl.innerHTML = '<div class="empty"><strong>' + esc(copy[0]) + "</strong>" + esc(copy[1]) + "</div>";
+      return;
+    }
+    listEl.innerHTML = visible.map(cardHtml).join("");
+  }
+
+  listEl.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-action]");
+    if (!btn || !state.token) return;
+    var id = btn.dataset.id;
+    var action = btn.dataset.action;
+    var next = action === "approve" ? "approved"
+      : action === "reject" ? "rejected"
+      : action === "mark-applied" ? "applied"
+      : null;
+    if (!next) return;
+    btn.disabled = true;
+    api("/api/matches/" + encodeURIComponent(id), { method: "PATCH", body: { status: next } })
+      .then(function () { return refresh(); })
+      .catch(function () { btn.disabled = false; });
+  });
+
+  function refresh() {
+    return api("/api/matches").then(function (data) {
+      state.docs = data.matches || [];
+      render();
+    });
+  }
+
+  async function boot() {
+    state.token = getToken();
+    if (!state.token) {
+      var entered = window.prompt("Enter your dashboard access token:");
+      if (entered) {
+        try { localStorage.setItem("jobhunt_token", entered); } catch (e) {}
+        state.token = entered;
+      }
+    }
+    if (!state.token) {
+      listEl.innerHTML = '<div class="empty"><strong>Token required</strong>Open the link from the job-hunt-agent README, which includes your access token.</div>';
+      return;
+    }
+    try {
+      await refresh();
+    } catch (e) {
+      listEl.innerHTML = '<div class="empty"><strong>Can’t reach the server</strong>Check that the job-hunt-agent server is running on your Mac and that Tailscale is connected.</div>';
+      return;
+    }
+    setInterval(function () {
+      refresh().catch(function () {});
+    }, 30000);
+  }
+
+  render();
+  boot();
+})();
+</script>
